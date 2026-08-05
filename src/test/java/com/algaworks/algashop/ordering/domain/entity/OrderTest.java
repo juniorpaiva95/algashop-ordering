@@ -1,5 +1,6 @@
 package com.algaworks.algashop.ordering.domain.entity;
 
+import com.algaworks.algashop.ordering.domain.exception.OrderCannotBeEditedException;
 import com.algaworks.algashop.ordering.domain.exception.OrderInvalidShippingDeliveryDateException;
 import com.algaworks.algashop.ordering.domain.exception.OrderStatusCannotBeChangedException;
 import com.algaworks.algashop.ordering.domain.exception.ProductOutOfStockException;
@@ -16,8 +17,27 @@ import java.util.Set;
 class OrderTest {
 
     @Test
-    public void shouldGenerate() {
-        Order order = Order.draft(new CustomerId());
+    public void shouldGenerateDraftOrder() {
+        CustomerId customerId = new CustomerId();
+        Order order = Order.draft(customerId);
+
+        Assertions.assertWith(order,
+                o-> Assertions.assertThat(o.id()).isNotNull(),
+                o-> Assertions.assertThat(o.customerId()).isEqualTo(customerId),
+                o-> Assertions.assertThat(o.totalAmount()).isEqualTo(Money.ZERO),
+                o-> Assertions.assertThat(o.totalItems()).isEqualTo(Quantity.ZERO),
+                o-> Assertions.assertThat(o.isDraft()).isTrue(),
+                o-> Assertions.assertThat(o.items()).isEmpty(),
+
+                o -> Assertions.assertThat(o.placedAt()).isNull(),
+                o -> Assertions.assertThat(o.paidAt()).isNull(),
+                o -> Assertions.assertThat(o.canceledAt()).isNull(),
+                o -> Assertions.assertThat(o.readyAt()).isNull(),
+                o -> Assertions.assertThat(o.billing()).isNull(),
+                o -> Assertions.assertThat(o.shipping()).isNull(),
+                o -> Assertions.assertThat(o.paymentMethod()).isNull()
+
+        );
     }
 
     @Test
@@ -163,6 +183,20 @@ class OrderTest {
         );
 
         Assertions.assertThatExceptionOfType(ProductOutOfStockException.class).isThrownBy(addItemTask);
+    }
+
+    @Test
+    public void givenOrderCannotBeEdited_whenTryToUpdateAnOrder_withStatusNotDraft() {
+        Order order = OrderTestDataBuilder.anOrder().build();
+
+        order.place();
+
+        ThrowableAssert.ThrowingCallable addItemTask = () -> order.addItem(
+                ProductTestDataBuilder.aProduct().build(),
+                new Quantity(1)
+        );
+
+        Assertions.assertThatExceptionOfType(OrderCannotBeEditedException.class).isThrownBy(addItemTask);
     }
 
 }
