@@ -3,7 +3,7 @@ package com.algaworks.algashop.ordering.domain.entity;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-class OrderStatusTest {
+public class OrderStatusTest {
 
     @Test
     public void canChangeTo() {

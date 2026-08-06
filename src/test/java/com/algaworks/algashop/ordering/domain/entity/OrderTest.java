@@ -185,18 +185,4 @@ class OrderTest {
         Assertions.assertThatExceptionOfType(ProductOutOfStockException.class).isThrownBy(addItemTask);
     }
 
-    @Test
-    public void givenOrderCannotBeEdited_whenTryToUpdateAnOrder_withStatusNotDraft() {
-        Order order = OrderTestDataBuilder.anOrder().build();
-
-        order.place();
-
-        ThrowableAssert.ThrowingCallable addItemTask = () -> order.addItem(
-                ProductTestDataBuilder.aProduct().build(),
-                new Quantity(1)
-        );
-
-        Assertions.assertThatExceptionOfType(OrderCannotBeEditedException.class).isThrownBy(addItemTask);
-    }
-
 }

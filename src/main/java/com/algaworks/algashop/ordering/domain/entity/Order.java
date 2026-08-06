@@ -102,19 +102,23 @@ public class Order {
 
     public void place() {
         this.verifyIfCanChangeToPlaced();
-        this.setPlacedAt(OffsetDateTime.now());
         this.changeStatus(OrderStatus.PLACED);
+        this.setPlacedAt(OffsetDateTime.now());
     }
 
     public void markAsPaid() {
-        this.setPaidAt(OffsetDateTime.now());
         this.changeStatus(OrderStatus.PAID);
+        this.setPaidAt(OffsetDateTime.now());
+    }
+
+    public void markAsReady() {
+        this.changeStatus(OrderStatus.READY);
+        this.setReadyAt(OffsetDateTime.now());
     }
 
     public void changePaymentMethod(PaymentMethod paymentMethod) {
         Objects.requireNonNull(paymentMethod);
         verifyIfChangeable();
-
         this.setPaymentMethod(paymentMethod);
     }
 
@@ -126,6 +130,7 @@ public class Order {
 
     public void changeShipping(Shipping newShipping) {
         Objects.requireNonNull(newShipping);
+
         verifyIfChangeable();
 
         if (newShipping.expectedDate().isBefore(LocalDate.now())) {
@@ -147,6 +152,16 @@ public class Order {
         this.recalculateTotals();
     }
 
+    public void removeItem(OrderItemId orderItemId) {
+        Objects.requireNonNull(orderItemId);
+        verifyIfChangeable();
+
+        OrderItem orderItem = findOrderItem(orderItemId);
+        this.items.remove(orderItem);
+
+        recalculateTotals();
+    }
+
     public boolean isDraft() {
         return OrderStatus.DRAFT.equals(this.status());
     }
@@ -157,6 +172,10 @@ public class Order {
 
     public boolean isPaid() {
         return OrderStatus.PAID.equals(this.status());
+    }
+
+    public boolean isReady() {
+        return OrderStatus.READY.equals(this.status());
     }
 
     public OrderId id() {
@@ -239,12 +258,6 @@ public class Order {
         this.setStatus(newStatus);
     }
 
-    private void verifyIfChangeable() {
-        if(!this.isDraft()) {
-            throw new OrderCannotBeEditedException(this.id(), this.status());
-        }
-    }
-
     private void verifyIfCanChangeToPlaced() {
         if (this.shipping() == null) {
             throw OrderCannotBePlacedException.noShippingInfo(this.id());
@@ -266,6 +279,12 @@ public class Order {
                 .filter(i -> i.id().equals(orderItemId))
                 .findFirst()
                 .orElseThrow(()-> new OrderDoesNotContainOrderItemException(this.id(), orderItemId));
+    }
+
+    private void verifyIfChangeable() {
+        if (!this.isDraft()) {
+            throw new OrderCannotBeEditedException(this.id(), this.status());
+        }
     }
 
     private void setId(OrderId id) {
