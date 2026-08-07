@@ -1,7 +1,7 @@
 plugins {
 	id 'idea'
 	id 'java'
-	id 'org.springframework.boot' version '4.1.0'
+	id 'org.springframework.boot' version '3.4.4'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -14,24 +14,61 @@ java {
 	}
 }
 
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
 repositories {
 	mavenCentral()
 }
 
 dependencies {
-	implementation 'org.springframework.boot:spring-boot-starter-webmvc'
-    implementation 'com.fasterxml.uuid:java-uuid-generator:5.1.0'
-    implementation 'commons-validator:commons-validator:1.9.0'
-    implementation 'io.hypersistence:hypersistence-tsid:2.1.4'
-    compileOnly 'org.projectlombok:lombok'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'commons-validator:commons-validator:1.9.0'
+	implementation 'com.fasterxml.uuid:java-uuid-generator:5.1.0'
+	implementation 'io.hypersistence:hypersistence-tsid:2.1.4'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	runtimeOnly 'com.h2database:h2'
+	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-webmvc-test'
-    testImplementation 'org.assertj:assertj-core:3.27.3'
-    testCompileOnly 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.assertj:assertj-core:3.27.3'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	testAnnotationProcessor 'org.projectlombok:lombok'
 }
 
 tasks.named('test') {
 	useJUnitPlatform()
+}
+
+test {
+	filter {
+		excludeTestsMatching("*IT")
+	}
+}
+
+tasks.named('check') {
+	dependsOn(test, integrationTest)
+}
+
+tasks.register('integrationTest', Test) {
+	description = 'Run integration tests.'
+	group = 'verification'
+
+	testClassesDirs = sourceSets.test.output.classesDirs
+	classpath = sourceSets.test.runtimeClasspath
+
+	shouldRunAfter test
+
+	useJUnitPlatform()
+
+	testLogging {
+		events "passed"
+	}
+
+	filter {
+		includeTestsMatching "*IT"
+		excludeTestsMatching "*Test"
+	}
 }

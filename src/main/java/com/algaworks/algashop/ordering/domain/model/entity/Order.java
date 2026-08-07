@@ -1,6 +1,5 @@
 package com.algaworks.algashop.ordering.domain.model.entity;
 
-import com.algaworks.algashop.ordering.domain.exception.*;
 import com.algaworks.algashop.ordering.domain.model.exception.*;
 import com.algaworks.algashop.ordering.domain.model.valueobject.*;
 import com.algaworks.algashop.ordering.domain.model.valueobject.id.CustomerId;
