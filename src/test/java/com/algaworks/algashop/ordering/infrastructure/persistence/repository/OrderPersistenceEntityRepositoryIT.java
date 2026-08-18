@@ -34,6 +34,10 @@ class OrderPersistenceEntityRepositoryIT {
 
         orderPersistenceEntityRepository.saveAndFlush(entity);
         Assertions.assertThat(orderPersistenceEntityRepository.existsById(entity.getId())).isTrue();
+
+        OrderPersistenceEntity savedEntity = orderPersistenceEntityRepository.findById(entity.getId()).orElseThrow();
+
+        Assertions.assertThat(savedEntity.getItems()).isNotEmpty();
     }
 
     @Test
@@ -45,10 +49,10 @@ class OrderPersistenceEntityRepositoryIT {
     @Test
     public void shouldSetAuditingValues() {
         OrderPersistenceEntity entity = OrderPersistenceEntityTestDataBuilder.existingOrder().build();
-
         entity = orderPersistenceEntityRepository.saveAndFlush(entity);
 
         Assertions.assertThat(entity.getCreatedByUserId()).isNotNull();
+
         Assertions.assertThat(entity.getLastModifiedAt()).isNotNull();
         Assertions.assertThat(entity.getLastModifiedByUserId()).isNotNull();
     }
