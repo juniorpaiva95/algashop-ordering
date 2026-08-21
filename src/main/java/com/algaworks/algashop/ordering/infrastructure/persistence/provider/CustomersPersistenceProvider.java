@@ -53,6 +53,22 @@ public class CustomersPersistenceProvider implements Customers {
                 );
     }
 
+    @Override
+    public long count() {
+        return persistenceRepository.count();
+    }
+
+    @Override
+    public Optional<Customer> ofEmail(Email email) {
+        return persistenceRepository.findByEmail(email.value())
+                .map(disassembler::toDomainEntity);
+    }
+
+    @Override
+    public boolean isEmailUnique(Email email, CustomerId exceptCustomerId) {
+        return !persistenceRepository.existsByEmailAndIdNot(email.value(), exceptCustomerId.value());
+    }
+
     private void update(Customer aggregateRoot, CustomerPersistenceEntity persistenceEntity) {
         persistenceEntity = assembler.merge(persistenceEntity, aggregateRoot);
         entityManager.detach(persistenceEntity);
@@ -74,14 +90,4 @@ public class CustomersPersistenceProvider implements Customers {
         version.setAccessible(false);
     }
 
-    @Override
-    public long count() {
-        return persistenceRepository.count();
-    }
-
-    @Override
-    public Optional<Customer> ofEmail(Email email) {
-        return persistenceRepository.findByEmail(email.value())
-                .map(disassembler::toDomainEntity);
-    }
 }
