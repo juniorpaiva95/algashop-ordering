@@ -18,6 +18,12 @@ import java.util.stream.Collectors;
 public class OrderPersistenceEntityDisassembler {
 
     public Order toDomainEntity(OrderPersistenceEntity persistenceEntity) {
+
+        CreditCardId creditCardId = null;
+        if (persistenceEntity.getCreditCardId() != null) {
+            creditCardId = new CreditCardId(persistenceEntity.getCreditCardId());
+        }
+
         return Order.existing()
                 .id(new OrderId(persistenceEntity.getId()))
                 .customerId(new CustomerId(persistenceEntity.getCustomerId()))
@@ -32,6 +38,7 @@ public class OrderPersistenceEntityDisassembler {
                 .items(new HashSet<>())
                 .version(persistenceEntity.getVersion())
                 .items(toDomainEntity(persistenceEntity.getItems()))
+                .creditCardId(creditCardId)
                 .build();
     }
 
@@ -72,6 +79,7 @@ public class OrderPersistenceEntityDisassembler {
                 .fullName(new FullName(billingEmbeddable.getFirstName(), billingEmbeddable.getLastName()))
                 .document(new Document(billingEmbeddable.getDocument()))
                 .phone(new Phone(billingEmbeddable.getPhone()))
+                .email(new Email(billingEmbeddable.getEmail()))
                 .address(toAddressValueObject(billingEmbeddable.getAddress()))
                 .build();
     }
